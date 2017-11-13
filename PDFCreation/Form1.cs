@@ -23,16 +23,41 @@ namespace PDFCreation
 
         private void button1_Click(object sender, EventArgs e)
         {
-
-            PDFUtils pdfUtils = new PDFUtils();
-
-            Voucher voucher = new Voucher();
-            
-            String filePath = pdfUtils.createPDFVoucher(voucher);
-
-            if (!String.IsNullOrEmpty(filePath))
+            try
             {
-                System.Diagnostics.Process.Start(@filePath);
+                PDFUtils pdfUtils = new PDFUtils();
+
+                Voucher voucher = new Voucher();
+
+                Producto producto = new Producto();
+                producto.Nombre = "UnProductoooooo";
+
+                voucher.Producto = producto;
+
+                Cliente cliente = new Cliente();
+                cliente.Dni = "666";
+
+                voucher.Cliente = cliente;
+
+                String filePath = pdfUtils.createPDFVoucher(voucher);
+
+                if (!String.IsNullOrEmpty(filePath))
+                {
+                    System.Diagnostics.Process.Start(@filePath);
+                }
+
+            }
+            catch (DirectoryNotFoundException exception)
+            {
+                MessageBox.Show("No es posible hallar el directorio determinado, por favor revise la configuración", "Alerta");
+            }
+            catch (IOException exception)
+            {
+                MessageBox.Show("No es posible crear el archivo, ya existe un archivo con el mismo nombre", "Alerta");
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show("No es posible generar el archivo. Póngase en contacto con el administrador", "Alerta");
             }
 
             /*

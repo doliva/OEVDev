@@ -15,10 +15,27 @@ namespace Utils
         public String createPDFVoucher(Voucher voucher)
         {
             Document doc = new Document(iTextSharp.text.PageSize.LETTER, 10, 10, 42, 35);
-            String filePath =  "C:\\Users\\Natalia\\Desktop\\Test.pdf";
+            String filePath = getPDFFilePath(voucher);
             FileStream fileStream = new FileStream(filePath, FileMode.Create);
-            PdfWriter wri = PdfWriter.GetInstance(doc, fileStream );
+            PdfWriter wri = PdfWriter.GetInstance(doc, fileStream);
             doc.Open();
+
+            PdfPTable tabFot = new PdfPTable(new float[] { 3F });
+            //tabFot.SpacingAfter = 10F;
+            PdfPCell cell;
+            tabFot.TotalWidth = doc.PageSize.Width -50F;
+            
+            iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance("Resources/LogoOEV.png");
+            logo.ScalePercent(23f);
+
+            cell = new PdfPCell(logo);
+            cell.Colspan = 3; 
+            tabFot.AddCell(cell);
+            //tabFot.WriteSelectedRows(0, -1, 10, doc.Top, wri.DirectContent);
+
+            doc.Add(tabFot);
+
+            /*
 
             iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance("Resources/LogoOEV.png");
             logo.ScalePercent(25f);
@@ -42,10 +59,18 @@ namespace Utils
 
             Paragraph paragraph = new Paragraph("This is my first lines using paragraph. \n Te amo MUCHOOOOOOO");
             doc.Add(paragraph);
+            */
+            
             doc.Close();
 
-
             return filePath ;
+        }
+
+        private string getPDFFilePath(Voucher voucher)
+        {
+
+            String fileName = voucher.Cliente.Dni + "-" + voucher.Producto.Nombre +".pdf";
+            return "C:\\Users\\Natalia\\Desktop\\" + fileName;
         }
 
     }
