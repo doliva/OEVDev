@@ -28,14 +28,22 @@ namespace PDFCreation
                 PDFUtils pdfUtils = new PDFUtils();
 
                 Voucher voucher = new Voucher();
+                voucher.Numero = "112233445566";
+                voucher.Estado = "Pagado";
+                voucher.Cantindad = 2;
 
                 Producto producto = new Producto();
                 producto.Nombre = "UnProductoooooo";
+                
 
                 voucher.Producto = producto;
 
                 Cliente cliente = new Cliente();
                 cliente.Dni = "666";
+                cliente.Apellido = "Ponce";
+                cliente.Nombre = "Natalia Alejandra";
+                cliente.Domicilio = "Mateo Churich 1234";
+
 
                 voucher.Cliente = cliente;
 
