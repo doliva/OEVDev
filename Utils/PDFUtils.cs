@@ -12,7 +12,7 @@ namespace Utils
 {
     public class PDFUtils
     {
-        public String createPDFVoucher(Voucher voucher)
+        public String crearPDFVoucher(Voucher voucher)
         {
 
             Document doc = new Document(iTextSharp.text.PageSize.LETTER, 10, 10, 42, 35);
@@ -25,7 +25,7 @@ namespace Utils
 
             tabFot.TotalWidth = doc.PageSize.Width - 50F;
 
-            generarEncabezadoVoucher(tabFot, voucher);
+            generarEncabezado(tabFot, "Voucher: " + voucher.Numero);
 
             generarDatosUsuarioVoucher(tabFot, voucher);
 
@@ -33,7 +33,7 @@ namespace Utils
 
             generarContenidoVoucher(tabFot, voucher);
 
-            generarPieDePagina(tabFot, voucher);
+            generarPieDePagina(tabFot, "El estado de este voucher es: " + voucher.Estado);
 
 
             doc.Add(tabFot);
@@ -69,9 +69,134 @@ namespace Utils
             Paragraph paragraph = new Paragraph("This is my first lines using paragraph. \n Te amo MUCHOOOOOOO");
             doc.Add(paragraph);
             */
-            
+            /*
+            PDFUtils pdfUtils = new PDFUtils();
+
+            Document doc = new Document(iTextSharp.text.PageSize.LETTER, 10, 10, 42, 35);
+            PdfWriter wri = PdfWriter.GetInstance(doc, new FileStream("C:\\Users\\Natalia\\Desktop\\Test.pdf", FileMode.Create));
+            doc.Open();
+
+            iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance("Resources/LogoOEV.png");
+            logo.ScalePercent(25f);
+            logo.SetAbsolutePosition(doc.PageSize.Width -150f, doc.PageSize.Height -100f);
+
+            doc.Add(logo);
+
+            PdfContentByte cb = wri.DirectContent;
+
+
+            // we tell the ContentByte we're ready to draw text
+            cb.BeginText();
+
+            cb.SetTextMatrix(10, 20);
+            cb.SetFontAndSize(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false), 10);
+            cb.ShowText("Dirección falsa 123 Piso 1 Oficina 666 \n Código Postal 1234 \n Teléfono 1533881234 \n Buenos Aires - Argentina");
+
+
+            // we tell the contentByte, we've finished drawing text
+            cb.EndText();
+
+            Paragraph paragraph = new Paragraph("This is my first lines using paragraph. \n Te amo MUCHOOOOOOO");
+            doc.Add(paragraph);
+            doc.Close();
+            */
+
 
         }
+
+        public String crearPDFVentas(List<Venta> ventas)
+        {
+
+            Document doc = new Document(iTextSharp.text.PageSize.LETTER, 10, 10, 42, 35);
+            String filePath = getPDFFilePath(ventas);
+            FileStream fileStream = new FileStream(filePath, FileMode.Create);
+            PdfWriter wri = PdfWriter.GetInstance(doc, fileStream);
+            doc.Open();
+
+            PdfPTable tabFot = new PdfPTable(3);
+
+            tabFot.TotalWidth = doc.PageSize.Width - 50F;
+
+            generarEncabezado(tabFot, "Generado el:" + DateTime.Now.ToString("yyyy/MM/dd-HH:mm"));
+
+            generarTitulo(tabFot, "Reporte de ventas");
+
+            Decimal total = generarContenidoReporteVentas(tabFot, ventas);
+
+            generarReporteDeVentasTotal(tabFot, total);
+
+            generarPieDePagina(tabFot, "Pie de pagina");
+
+
+            doc.Add(tabFot);
+
+            doc.Close();
+
+            return filePath;
+
+
+
+        }
+
+        private void generarReporteDeVentasTotal(PdfPTable tabFot, decimal total)
+        {
+            PdfPCell celdaDatosComplementarios = new PdfPCell();
+            celdaDatosComplementarios.Colspan = 3;
+
+            Paragraph paragraph = new Paragraph("Total: " + total.ToString());
+            paragraph.Alignment = Element.TITLE;
+            paragraph.Font.Size = 8F;
+            paragraph.SpacingAfter = 10F;
+
+            celdaDatosComplementarios.AddElement(paragraph);
+
+            tabFot.AddCell(celdaDatosComplementarios);
+        }
+
+        private Decimal generarContenidoReporteVentas(PdfPTable tabFot, List<Venta> ventas)
+        {
+            Decimal total = 0;
+
+            PdfPCell contenido = new PdfPCell();
+            contenido.Colspan = 3;
+
+            foreach (Venta venta in ventas)
+            {
+                for (int i = 0; i < venta.FacturaVenta.Items.Count; i++)
+                {
+                    DetalleFactura detalleFactura = venta.FacturaVenta.Items[i];
+                    Paragraph paragraph = new Paragraph(detalleFactura.Detalle);
+
+                    total = total + (detalleFactura.Cantidad * detalleFactura.Precio);
+
+                }
+
+            }
+
+            return total;
+        }
+
+        private void generarTitulo(PdfPTable tabFot, String titulo)
+        {
+            PdfPCell celdaDatosComplementarios = new PdfPCell();
+            celdaDatosComplementarios.Colspan = 3;
+
+            Paragraph paragraph = new Paragraph(titulo);
+            paragraph.Alignment = Element.TITLE;
+            paragraph.Font.Size = 16F;
+            paragraph.SpacingAfter = 10F;
+
+            celdaDatosComplementarios.AddElement(paragraph);
+
+            tabFot.AddCell(celdaDatosComplementarios);
+        }
+
+        private string getPDFFilePath(List<Venta> ventas)
+        {
+            String fileName = "reporteDeVentas" + DateTime.Now.ToString("yyyyMMdd-HHmmss") +".pdf";
+            return "C:\\Users\\Leonora\\Desktop\\" + fileName;
+        }
+
 
         private void generarDatosComplementariosVoucher(PdfPTable tabFot, Voucher voucher)
         {
@@ -85,12 +210,12 @@ namespace Utils
             tabFot.AddCell(celdaDatosComplementarios);
         }
 
-        private void generarPieDePagina(PdfPTable tabFot, Voucher voucher)
+        private void generarPieDePagina(PdfPTable tabFot, String detalle)
         {
             PdfPCell celdaEstadoVaucher = new PdfPCell();
             celdaEstadoVaucher.Colspan = 2;
 
-            Paragraph textoEstadoVoucher = new Paragraph("El estado de este voucher es: " + voucher.Estado);
+            Paragraph textoEstadoVoucher = new Paragraph(detalle);
 
             celdaEstadoVaucher.AddElement(textoEstadoVoucher);
 
@@ -108,6 +233,7 @@ namespace Utils
 
             tabFot.AddCell(celdaFirma);
         }
+
 
         private void generarContenidoVoucher(PdfPTable tabFot, Voucher voucher)
         {
@@ -140,7 +266,7 @@ namespace Utils
             return "C:\\Users\\Leonora\\Desktop\\" + fileName;
         }
 
-        private void generarEncabezadoVoucher(PdfPTable table, Voucher voucher)
+        private void generarEncabezado(PdfPTable table, String detalle)
         {
             PdfPCell imagenEncabezadoCell = new PdfPCell();
             imagenEncabezadoCell.PaddingBottom = 1f;
@@ -164,10 +290,13 @@ namespace Utils
 
             PdfPCell celdaVoucherDatos = new PdfPCell();
 
-            Paragraph textoDatosVaoucher = new Paragraph("Voucher: " + voucher.Numero);
+            //if (voucher != null)
+            //{
+            Paragraph textoDatosVaoucher = new Paragraph(detalle);
 
             celdaVoucherDatos.AddElement(textoDatosVaoucher);
-
+            //}
+            
             table.AddCell(celdaVoucherDatos);
         }
     }
