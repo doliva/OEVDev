@@ -12,6 +12,9 @@ namespace Utils
 {
     public class PDFUtils
     {
+
+        private static String defaulDateFormat = "dd/MM/yyyy";
+
         public String crearPDFVoucher(Voucher voucher)
         {
 
@@ -42,73 +45,13 @@ namespace Utils
 
             return filePath;
 
-            //Console.WriteLine("Table columns=" + tabFot.NumberOfColumns);
-
-            /*
-
-            iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance("Resources/LogoOEV.png");
-            logo.ScalePercent(25f);
-            logo.SetAbsolutePosition(doc.PageSize.Width - 150f, doc.PageSize.Height - 100f);
-
-            doc.Add(logo);
-
-            PdfContentByte cb = wri.DirectContent;
-
-
-            // we tell the ContentByte we're ready to draw text
-            cb.BeginText();
-
-            cb.SetTextMatrix(10, 20);
-            cb.SetFontAndSize(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false), 10);
-            cb.ShowText("Dirección falsa 123 Piso 1 Oficina 666 \n Código Postal 1234 \n Teléfono 1533881234 \n Buenos Aires - Argentina");
-
-
-            // we tell the contentByte, we've finished drawing text
-            cb.EndText();
-
-            Paragraph paragraph = new Paragraph("This is my first lines using paragraph. \n Te amo MUCHOOOOOOO");
-            doc.Add(paragraph);
-            */
-            /*
-            PDFUtils pdfUtils = new PDFUtils();
-
-            Document doc = new Document(iTextSharp.text.PageSize.LETTER, 10, 10, 42, 35);
-            PdfWriter wri = PdfWriter.GetInstance(doc, new FileStream("C:\\Users\\Natalia\\Desktop\\Test.pdf", FileMode.Create));
-            doc.Open();
-
-            iTextSharp.text.Image logo = iTextSharp.text.Image.GetInstance("Resources/LogoOEV.png");
-            logo.ScalePercent(25f);
-            logo.SetAbsolutePosition(doc.PageSize.Width -150f, doc.PageSize.Height -100f);
-
-            doc.Add(logo);
-
-            PdfContentByte cb = wri.DirectContent;
-
-
-            // we tell the ContentByte we're ready to draw text
-            cb.BeginText();
-
-            cb.SetTextMatrix(10, 20);
-            cb.SetFontAndSize(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false), 10);
-            cb.ShowText("Dirección falsa 123 Piso 1 Oficina 666 \n Código Postal 1234 \n Teléfono 1533881234 \n Buenos Aires - Argentina");
-
-
-            // we tell the contentByte, we've finished drawing text
-            cb.EndText();
-
-            Paragraph paragraph = new Paragraph("This is my first lines using paragraph. \n Te amo MUCHOOOOOOO");
-            doc.Add(paragraph);
-            doc.Close();
-            */
-
-
         }
 
         public String crearPDFVentas(List<Venta> ventas)
         {
 
             Document doc = new Document(iTextSharp.text.PageSize.LETTER, 10, 10, 42, 35);
-            String filePath = getPDFFilePath(ventas);
+            String filePath = System.IO.Path.GetTempPath() + Guid.NewGuid().ToString() + ".pdf"; 
             FileStream fileStream = new FileStream(filePath, FileMode.Create);
             PdfWriter wri = PdfWriter.GetInstance(doc, fileStream);
             doc.Open();
@@ -127,16 +70,40 @@ namespace Utils
 
             generarPieDePagina(tabFot, "Pie de pagina");
 
-
             doc.Add(tabFot);
 
             doc.Close();
 
-            return filePath;
+            return agregarNumeroDePagina(filePath);
 
 
 
         }
+
+
+        private String agregarNumeroDePagina(String filePath)
+        {
+            byte[] bytes = File.ReadAllBytes(@filePath);
+            Font blackFont = FontFactory.GetFont("Arial", 12, Font.NORMAL, BaseColor.BLACK);
+            using (MemoryStream stream = new MemoryStream())
+            {
+                PdfReader reader = new PdfReader(bytes);
+                using (PdfStamper stamper = new PdfStamper(reader, stream))
+                {
+                    int pages = reader.NumberOfPages;
+                    for (int i = 1; i <= pages; i++)
+                    {
+                        ColumnText.ShowTextAligned(stamper.GetUnderContent(i), Element.ALIGN_RIGHT, new Phrase(i.ToString()+"/"+pages.ToString(), blackFont), 568f, 15f, 0);
+                    }
+                }
+                bytes = stream.ToArray();
+            }
+            String filePathFinal = generarPDFVentasNombreDeArchivo();
+            File.WriteAllBytes(@filePathFinal, bytes);
+
+            return filePathFinal;
+        }
+
 
         private void generarReporteDeVentasTotal(PdfPTable tabFot, decimal total)
         {
@@ -163,6 +130,9 @@ namespace Utils
             Paragraph parrafoTextoLinea;
             Paragraph parrafoTotalLinea;
 
+            DateTime menorFecha = DateTime.MinValue;
+            DateTime mayorFecha = DateTime.MinValue;
+
             foreach (Venta venta in ventas)
             {
                 saleTotal = 0;
@@ -181,7 +151,17 @@ namespace Utils
                 celdaTotalVenta = new PdfPCell();
                 celdaTotalVenta.Colspan = 1;
 
-                String textoLinea = "Cliente: " + venta.ClienteVenta.Apellido + ", " + venta.ClienteVenta.Nombre + "- DNI: " + venta.ClienteVenta.Dni + " - Codigo Factura: " + venta.FacturaVenta.IdFactura;
+                String textoLinea = "Fecha: "+venta.FacturaVenta.Fecha.ToString(defaulDateFormat) +" Cliente: " + venta.ClienteVenta.Apellido + ", " + venta.ClienteVenta.Nombre + "- DNI: " + venta.ClienteVenta.Dni + " - Codigo Factura: " + venta.FacturaVenta.IdFactura;
+
+                if (menorFecha == DateTime.MinValue || menorFecha > venta.FacturaVenta.Fecha)
+                {
+                    menorFecha = venta.FacturaVenta.Fecha;
+                }
+
+                if (mayorFecha == DateTime.MinValue || mayorFecha < venta.FacturaVenta.Fecha)
+                {
+                    mayorFecha = venta.FacturaVenta.Fecha;
+                }
 
                 parrafoTextoLinea = new Paragraph(textoLinea);
                 parrafoTextoLinea.Font.Size = 10F;
@@ -199,6 +179,17 @@ namespace Utils
                 total = total + saleTotal;
 
             }
+
+            PdfPCell celdaFechaVenta = new PdfPCell();
+            celdaFechaVenta.Colspan = 3;
+
+            Paragraph parrafoFechaVenta = new Paragraph("Datos entre fechas: " + menorFecha.ToString(defaulDateFormat) + " y " + mayorFecha.ToString(defaulDateFormat));
+            parrafoFechaVenta.Font.Size = 10F;
+            parrafoFechaVenta.Alignment = Element.TITLE;
+
+            celdaFechaVenta.AddElement(parrafoFechaVenta);
+
+            tabFot.AddCell(celdaFechaVenta);
 
             return total;
         }
@@ -218,7 +209,7 @@ namespace Utils
             tabFot.AddCell(celdaDatosComplementarios);
         }
 
-        private string getPDFFilePath(List<Venta> ventas)
+        private string generarPDFVentasNombreDeArchivo()
         {
             String fileName = "reporteDeVentas" + DateTime.Now.ToString("yyyyMMdd-HHmmss") +".pdf";
             return "C:\\Users\\Leonora\\Desktop\\" + fileName;
@@ -319,12 +310,9 @@ namespace Utils
 
             PdfPCell celdaVoucherDatos = new PdfPCell();
 
-            //if (voucher != null)
-            //{
             Paragraph textoDatosVaoucher = new Paragraph(detalle);
 
             celdaVoucherDatos.AddElement(textoDatosVaoucher);
-            //}
             
             table.AddCell(celdaVoucherDatos);
         }

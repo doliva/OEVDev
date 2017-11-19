@@ -78,12 +78,12 @@ namespace PDFCreation
 
                 List<Venta> ventas = new List<Entities.Venta>();
 
-                int elements = rnd.Next(1, 7);
+                int elements = rnd.Next(1, 50);
 
                 for (int i = 0; i < elements; i++)
                 {
 
-                    ventas.Add(CreateVenta());
+                    ventas.Add(createVenta());
 
                 }
 
@@ -112,33 +112,34 @@ namespace PDFCreation
 
         }
 
-        private Venta CreateVenta()
+        private Venta createVenta()
         {
-            Cliente cliente1 = new Cliente();
-            cliente1.Apellido = randomString((Int16)rnd.Next(6, 12));
-            cliente1.Nombre = randomString((Int16)rnd.Next(6, 12));
-            cliente1.Celular = "celularCliente1";
-            cliente1.Ciudad = "ciudadCliente1";
-            cliente1.Dni = rnd.Next(10000, 100000).ToString();
-            cliente1.Domicilio = "domicilioCliente1";
-            cliente1.Email = "emailCliente1";
-            cliente1.Estado = 1;
+            Cliente cliente = new Cliente();
+            cliente.Apellido = randomString((Int16)rnd.Next(6, 12));
+            cliente.Nombre = randomString((Int16)rnd.Next(6, 12));
+            cliente.Celular = "celularCliente1";
+            cliente.Ciudad = "ciudadCliente1";
+            cliente.Dni = rnd.Next(10000, 100000).ToString();
+            cliente.Domicilio = "domicilioCliente1";
+            cliente.Email = "emailCliente1";
+            cliente.Estado = 1;
 
-            Factura factura1 = new Factura();
-            factura1.Estado = "estadoFactura1";
-            factura1.Fecha = new DateTime();
-            factura1.IdFactura = (Int16) rnd.Next(10, 1000) ;
-            factura1.Importe = Convert.ToDecimal(rnd.NextDouble());
-            factura1.TipoPago = "Efectivo";
+            Factura factura = new Factura();
+            factura.Estado = "estadoFactura1";
+            factura.Fecha = GetRandomDate(DateTime.Now.AddYears(-1),DateTime.Now) ;
+ 
+            factura.IdFactura = (Int16) rnd.Next(10, 1000) ;
+            factura.Importe = Convert.ToDecimal(rnd.NextDouble());
+            factura.TipoPago = "Efectivo";
 
-            factura1.Items = new List<DetalleFactura>();
+            factura.Items = new List<DetalleFactura>();
 
-            factura1.Items.AddRange(generarItemsFactura());
+            factura.Items.AddRange(generarItemsFactura());
 
             Venta venta1 = new Venta();
             venta1.Codigo = randomString((Int16)rnd.Next(6, 12));
-            venta1.ClienteVenta = cliente1;
-            venta1.FacturaVenta = factura1;
+            venta1.ClienteVenta = cliente;
+            venta1.FacturaVenta = factura;
             return venta1;
         }
 
@@ -183,6 +184,15 @@ namespace PDFCreation
             }
 
             return builder.ToString();
+        }
+
+        private  DateTime GetRandomDate(DateTime from, DateTime to)
+        {
+            var range = to - from;
+
+            var randTimeSpan = new TimeSpan((long)(rnd.NextDouble() * range.Ticks));
+
+            return from + randTimeSpan;
         }
 
     }
