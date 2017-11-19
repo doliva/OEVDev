@@ -145,7 +145,8 @@ namespace Utils
 
             Paragraph paragraph = new Paragraph("Total: " + total.ToString());
             paragraph.Alignment = Element.TITLE;
-            paragraph.Font.Size = 8F;
+            //paragraph.Font.Size = 16F;
+            paragraph.Font = FontFactory.GetFont("Verdana", 14F, Font.BOLD);
             paragraph.SpacingAfter = 10F;
 
             celdaDatosComplementarios.AddElement(paragraph);
@@ -156,20 +157,46 @@ namespace Utils
         private Decimal generarContenidoReporteVentas(PdfPTable tabFot, List<Venta> ventas)
         {
             Decimal total = 0;
-
-            PdfPCell contenido = new PdfPCell();
-            contenido.Colspan = 3;
+            Decimal saleTotal;
+            PdfPCell celdaDatosVenta;
+            PdfPCell celdaTotalVenta;
+            Paragraph parrafoTextoLinea;
+            Paragraph parrafoTotalLinea;
 
             foreach (Venta venta in ventas)
             {
+                saleTotal = 0;
                 for (int i = 0; i < venta.FacturaVenta.Items.Count; i++)
                 {
                     DetalleFactura detalleFactura = venta.FacturaVenta.Items[i];
                     Paragraph paragraph = new Paragraph(detalleFactura.Detalle);
 
-                    total = total + (detalleFactura.Cantidad * detalleFactura.Precio);
+                    saleTotal = saleTotal + (detalleFactura.Cantidad * detalleFactura.Precio);
 
                 }
+
+                celdaDatosVenta = new PdfPCell();
+                celdaDatosVenta.Colspan = 2;
+
+                celdaTotalVenta = new PdfPCell();
+                celdaTotalVenta.Colspan = 1;
+
+                String textoLinea = "Cliente: " + venta.ClienteVenta.Apellido + ", " + venta.ClienteVenta.Nombre + "- DNI: " + venta.ClienteVenta.Dni + " - Codigo Factura: " + venta.FacturaVenta.IdFactura;
+
+                parrafoTextoLinea = new Paragraph(textoLinea);
+                parrafoTextoLinea.Font.Size = 10F;
+
+                celdaDatosVenta.AddElement(parrafoTextoLinea);
+
+                parrafoTotalLinea = new Paragraph(saleTotal.ToString());
+                parrafoTotalLinea.Font.Size = 10F;
+
+                celdaTotalVenta.AddElement(parrafoTotalLinea);
+
+                tabFot.AddCell(celdaDatosVenta);
+                tabFot.AddCell(celdaTotalVenta);
+
+                total = total + saleTotal;
 
             }
 
@@ -216,6 +243,7 @@ namespace Utils
             celdaEstadoVaucher.Colspan = 2;
 
             Paragraph textoEstadoVoucher = new Paragraph(detalle);
+            textoEstadoVoucher.Font.Size = 10F;
 
             celdaEstadoVaucher.AddElement(textoEstadoVoucher);
 
@@ -228,6 +256,7 @@ namespace Utils
             Paragraph textoFirma = new Paragraph("Firma autorizadora: ");
             textoFirma.Alignment = Element.ALIGN_TOP;
             textoFirma.Font.Size = 6F;
+
 
             celdaFirma.AddElement(textoFirma);
 

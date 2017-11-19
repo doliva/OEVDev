@@ -21,6 +21,8 @@ namespace PDFCreation
             InitializeComponent();
         }
 
+        private Random rnd = new Random();
+
         private void button1_Click(object sender, EventArgs e)
         {
             try
@@ -76,46 +78,14 @@ namespace PDFCreation
 
                 List<Venta> ventas = new List<Entities.Venta>();
 
-                Cliente cliente1 = new Cliente();
-                cliente1.Apellido = "apellidoCliente1";
-                cliente1.Celular = "celularCliente1";
-                cliente1.Ciudad = "ciudadCliente1";
-                cliente1.Dni = "dniCliente1";
-                cliente1.Domicilio = "domicilioCliente1";
-                cliente1.Email = "emailCliente1";
-                cliente1.Estado = 1;
+                int elements = rnd.Next(1, 7);
 
-                Factura factura1 = new Factura();
-                factura1.Estado = "estadoFactura1";
-                factura1.Fecha = new DateTime();
-                factura1.IdFactura = 1;
-                factura1.Importe = new Decimal(33.12);
-                factura1.TipoPago = "Efectivo";
+                for (int i = 0; i < elements; i++)
+                {
 
-                factura1.Items = new List<DetalleFactura>();
+                    ventas.Add(CreateVenta());
 
-                DetalleFactura item1 = new DetalleFactura();
-                item1.Cantidad = 3;
-                item1.Detalle = "Una cosa que se vendió1";
-                item1.IdDetalle = 1;
-                item1.Precio = new Decimal(293.12);
-
-                factura1.Items.Add(item1);
-
-                DetalleFactura item2 = new DetalleFactura();
-                item2.Cantidad = 5;
-                item2.Detalle = "Una cosa linda que se vendió1";
-                item2.IdDetalle = 2;
-                item2.Precio = new Decimal(23.84);
-
-                factura1.Items.Add(item2);
-
-                Venta venta1 = new Venta();
-                venta1.Codigo = "1122334455";
-                venta1.ClienteVenta = cliente1;
-                venta1.FacturaVenta = factura1;
-
-                ventas.Add(venta1);
+                }
 
                 PDFUtils pdfUtils = new PDFUtils();
 
@@ -140,6 +110,79 @@ namespace PDFCreation
                 MessageBox.Show("No es posible generar el archivo. Póngase en contacto con el administrador", "Alerta");
             }
 
+        }
+
+        private Venta CreateVenta()
+        {
+            Cliente cliente1 = new Cliente();
+            cliente1.Apellido = randomString((Int16)rnd.Next(6, 12));
+            cliente1.Nombre = randomString((Int16)rnd.Next(6, 12));
+            cliente1.Celular = "celularCliente1";
+            cliente1.Ciudad = "ciudadCliente1";
+            cliente1.Dni = rnd.Next(10000, 100000).ToString();
+            cliente1.Domicilio = "domicilioCliente1";
+            cliente1.Email = "emailCliente1";
+            cliente1.Estado = 1;
+
+            Factura factura1 = new Factura();
+            factura1.Estado = "estadoFactura1";
+            factura1.Fecha = new DateTime();
+            factura1.IdFactura = (Int16) rnd.Next(10, 1000) ;
+            factura1.Importe = Convert.ToDecimal(rnd.NextDouble());
+            factura1.TipoPago = "Efectivo";
+
+            factura1.Items = new List<DetalleFactura>();
+
+            factura1.Items.AddRange(generarItemsFactura());
+
+            Venta venta1 = new Venta();
+            venta1.Codigo = randomString((Int16)rnd.Next(6, 12));
+            venta1.ClienteVenta = cliente1;
+            venta1.FacturaVenta = factura1;
+            return venta1;
+        }
+
+        private List<DetalleFactura> generarItemsFactura()
+        {
+            List<DetalleFactura> dfList = new List<DetalleFactura>();
+
+            int elements = rnd.Next(1, 7);
+
+            DetalleFactura detalleFactura;
+
+            for (int i = 0; i < elements; i++)
+            {
+                detalleFactura = new DetalleFactura();
+
+                detalleFactura.Cantidad = (Int16)rnd.Next(1, 7);
+
+                detalleFactura.Detalle = randomString((Int16)rnd.Next(6, 12));
+
+                detalleFactura.IdDetalle = (Int16)rnd.Next(10, 1000);
+
+                detalleFactura.Precio = Convert.ToDecimal(rnd.NextDouble());
+
+                dfList.Add(detalleFactura);
+
+
+            }
+
+            return dfList;
+        }
+
+        private string randomString(int length)
+        {
+            const string pool = "abcdefghijklmnopqrstuvwxyz0123456789";
+            var builder = new StringBuilder();
+
+
+            for (var i = 0; i < length; i++)
+            {
+                var c = pool[rnd.Next(0, pool.Length)];
+                builder.Append(c);
+            }
+
+            return builder.ToString();
         }
 
     }
