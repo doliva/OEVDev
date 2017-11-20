@@ -195,5 +195,66 @@ namespace PDFCreation
             return from + randTimeSpan;
         }
 
+        private void inscriptionButton_Click(object sender, EventArgs e)
+        {
+
+            try
+            {
+
+                ClienteActividad clienteActividad = new ClienteActividad();
+
+                Cliente cliente = new Cliente();
+                cliente.Dni = "666";
+                cliente.Apellido = "Ponce";
+                cliente.Nombre = "Natalia Alejandra";
+                cliente.Domicilio = "Mateo Churich 1";
+                cliente.Celular = "15algunosnumerosmas";
+                cliente.Ciudad = "Garín";
+                cliente.Email = "LaNatiLinda@gmail.com";
+                cliente.Estado = 1;
+                cliente.Telefono = "niidea";
+                cliente.Pasaporte = "ppaassaappoorrttee (alaalegria)";
+
+                clienteActividad.Cliente = cliente;
+
+
+                Actividad actividad = new Actividad();
+                actividad.Descripcion = "Querer y querer mucho";
+                actividad.Dias = "Todos los días";
+                actividad.Horarios = "de 00:00:00 a 23:59:59";
+                actividad.Nombre = "Tendrá nombre esto????";
+                actividad.Dificultad = "Facil";
+
+                List<Actividad> actividades = new List<Actividad>();
+                actividades.Add(actividad);
+
+                clienteActividad.Actividades = actividades;
+
+                PDFUtils pdfUtils = new PDFUtils();
+
+
+                String filePath = pdfUtils.crearPDFInscripcion(clienteActividad);
+
+                if (!String.IsNullOrEmpty(filePath))
+                {
+                    System.Diagnostics.Process.Start(@filePath);
+                }
+
+            }
+            catch (DirectoryNotFoundException exception)
+            {
+                MessageBox.Show("No es posible hallar el directorio determinado, por favor revise la configuración", "Alerta");
+            }
+            catch (IOException exception)
+            {
+                MessageBox.Show("No es posible crear el archivo, ya existe un archivo con el mismo nombre", "Alerta");
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show("No es posible generar el archivo. Póngase en contacto con el administrador", "Alerta");
+            }
+
+        }
+
     }
 }

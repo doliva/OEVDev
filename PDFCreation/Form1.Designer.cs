@@ -30,6 +30,7 @@
         {
             this.generatePDFBtn = new System.Windows.Forms.Button();
             this.generarPDFVentas = new System.Windows.Forms.Button();
+            this.inscriptionButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // generatePDFBtn
@@ -52,11 +53,22 @@
             this.generarPDFVentas.UseVisualStyleBackColor = true;
             this.generarPDFVentas.Click += new System.EventHandler(this.generarPDFVentas_Click);
             // 
+            // inscriptionButton
+            // 
+            this.inscriptionButton.Location = new System.Drawing.Point(261, 246);
+            this.inscriptionButton.Name = "inscriptionButton";
+            this.inscriptionButton.Size = new System.Drawing.Size(185, 23);
+            this.inscriptionButton.TabIndex = 2;
+            this.inscriptionButton.Text = "Generar PDF Inscripción";
+            this.inscriptionButton.UseVisualStyleBackColor = true;
+            this.inscriptionButton.Click += new System.EventHandler(this.inscriptionButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(707, 391);
+            this.Controls.Add(this.inscriptionButton);
             this.Controls.Add(this.generarPDFVentas);
             this.Controls.Add(this.generatePDFBtn);
             this.Name = "Form1";
@@ -69,6 +81,7 @@
 
         private System.Windows.Forms.Button generatePDFBtn;
         private System.Windows.Forms.Button generarPDFVentas;
+        private System.Windows.Forms.Button inscriptionButton;
     }
 }
 

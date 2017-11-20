@@ -15,6 +15,8 @@ namespace Utils
 
         private static String defaulDateFormat = "dd/MM/yyyy";
 
+        private static String cabeceraFechaFormato = "yyyy/MM/dd HH:mm";
+
         public String crearPDFVoucher(Voucher voucher)
         {
 
@@ -60,7 +62,7 @@ namespace Utils
 
             tabFot.TotalWidth = doc.PageSize.Width - 50F;
 
-            generarEncabezado(tabFot, "Generado el:" + DateTime.Now.ToString("yyyy/MM/dd-HH:mm"));
+            generarEncabezado(tabFot, "Generado el: " + DateTime.Now.ToString(cabeceraFechaFormato));
 
             generarTitulo(tabFot, "Reporte de ventas");
 
@@ -74,14 +76,294 @@ namespace Utils
 
             doc.Close();
 
-            return agregarNumeroDePagina(filePath);
+            return agregarNumeroDePagina(filePath, generarNombreDeArchivoPDFVentas());
 
 
 
         }
 
 
-        private String agregarNumeroDePagina(String filePath)
+        public String crearPDFInscripcion(ClienteActividad clienteActividad)
+        {
+
+            Document doc = new Document(iTextSharp.text.PageSize.LETTER, 10, 10, 42, 35);
+            String filePath = System.IO.Path.GetTempPath() + Guid.NewGuid().ToString() + ".pdf";
+            FileStream fileStream = new FileStream(filePath, FileMode.Create);
+            PdfWriter wri = PdfWriter.GetInstance(doc, fileStream);
+            doc.Open();
+
+            PdfPTable tabFot = new PdfPTable(3);
+
+            generarEncabezado(tabFot, "Generado el: " + DateTime.Now.ToString(cabeceraFechaFormato));
+
+            generarTitulo(tabFot, "Constancia de Inscripción");
+
+            generarContenidoCliente(tabFot, clienteActividad.Cliente);
+
+            generarContenidoActividad(tabFot, clienteActividad.Actividades);
+
+            generarPieDePagina(tabFot, "Pie de pagina");
+
+            doc.Add(tabFot);
+
+            doc.Close();
+
+
+            return agregarNumeroDePagina(filePath, generarNombreDeArchivoPDFInscripcion());
+
+
+
+        }
+
+        private void generarContenidoActividad(PdfPTable tabFot, List<Actividad> list)
+        {
+            PdfPCell informacionActividad = new PdfPCell();
+            informacionActividad.Colspan = 3;
+
+            Paragraph informacionActividadParagraph = new Paragraph("Datos inscripción");
+            informacionActividadParagraph.Alignment = Element.TITLE;
+            informacionActividadParagraph.Font = FontFactory.GetFont("Verdana", 12F, Font.BOLD);
+            informacionActividadParagraph.SpacingAfter = 8f;
+
+            informacionActividad.AddElement(informacionActividadParagraph);
+
+            tabFot.AddCell(informacionActividad);
+
+            float sparcingAfter = 4f;
+
+            foreach (Actividad actividad in list)
+            {
+                PdfPCell celdaNombre = new PdfPCell();
+
+                Paragraph nombreParagraph = new Paragraph(actividad.Nombre);
+                nombreParagraph.SpacingAfter = sparcingAfter;
+                nombreParagraph.Alignment = Element.TITLE;
+                nombreParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+                celdaNombre.AddElement(nombreParagraph);
+                
+                tabFot.AddCell(celdaNombre);
+
+                PdfPCell celdaDescripcion = new PdfPCell();
+                celdaDescripcion.Colspan = 2;
+
+                Paragraph descripcionParagraph = new Paragraph(actividad.Descripcion);
+                descripcionParagraph.Alignment = Element.TITLE;
+                descripcionParagraph.SpacingAfter = sparcingAfter;
+                descripcionParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+                celdaDescripcion.AddElement(descripcionParagraph);
+
+                tabFot.AddCell(celdaDescripcion);
+
+                PdfPCell celdaDias = new PdfPCell();
+
+                Paragraph diasParagraph = new Paragraph(actividad.Dias);
+                diasParagraph.Alignment = Element.TITLE;
+                diasParagraph.SpacingAfter = sparcingAfter;
+                diasParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+                celdaDias.AddElement(diasParagraph);
+
+                tabFot.AddCell(celdaDias);
+
+                PdfPCell celdaHorarios = new PdfPCell();
+
+                Paragraph horariosParagraph = new Paragraph(actividad.Horarios);
+                horariosParagraph.Alignment = Element.TITLE;
+                horariosParagraph.SpacingAfter = sparcingAfter;
+                horariosParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+                celdaHorarios.AddElement(horariosParagraph);
+
+                tabFot.AddCell(celdaHorarios);
+
+                PdfPCell celdaDificultad = new PdfPCell();
+
+                Paragraph dificultadParagraph = new Paragraph(actividad.Dificultad);
+                dificultadParagraph.Alignment = Element.TITLE;
+                dificultadParagraph.SpacingAfter = sparcingAfter;
+                dificultadParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+                celdaDificultad.AddElement(dificultadParagraph);
+
+                tabFot.AddCell(celdaDificultad);
+            }
+        }
+
+        private void generarContenidoCliente(PdfPTable tabFot, Cliente cliente)
+        {
+
+            PdfPCell informacionCliente = new PdfPCell();
+            informacionCliente.Colspan = 3;
+
+            Paragraph informacionClienteParagraph = new Paragraph("Datos Usuario");
+            informacionClienteParagraph.Alignment = Element.TITLE;
+            informacionClienteParagraph.Font = FontFactory.GetFont("Verdana", 12F, Font.BOLD);
+            informacionClienteParagraph.SpacingAfter = 8f;
+
+            informacionCliente.AddElement(informacionClienteParagraph);
+
+            tabFot.AddCell(informacionCliente);
+
+            // Linea 1
+
+            PdfPCell linea1Columna1 = new PdfPCell();
+
+            Paragraph nombreParagraph = new Paragraph("Nombre");
+            nombreParagraph.Alignment = Element.TITLE;
+            nombreParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.BOLD);
+
+            linea1Columna1.AddElement(nombreParagraph);
+
+            Paragraph nombreParagraphValor = new Paragraph(cliente.Nombre);
+            nombreParagraphValor.Alignment = Element.TITLE;
+            nombreParagraphValor.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+            linea1Columna1.AddElement(nombreParagraphValor);
+
+            tabFot.AddCell(linea1Columna1);
+
+            PdfPCell linea1Columna2 = new PdfPCell();
+
+            Paragraph apellidoParagraph = new Paragraph("Apellido");
+            apellidoParagraph.Alignment = Element.TITLE;
+            apellidoParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.BOLD);
+
+            linea1Columna2.AddElement(apellidoParagraph);
+
+            Paragraph apellidoParagraphValor = new Paragraph(cliente.Apellido);
+            apellidoParagraphValor.Alignment = Element.TITLE;
+            apellidoParagraphValor.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+            linea1Columna2.AddElement(apellidoParagraphValor);
+
+            tabFot.AddCell(linea1Columna2);
+
+            PdfPCell linea1Columna3 = new PdfPCell();
+
+            Paragraph dniParagraph = new Paragraph("DNI");
+            dniParagraph.Alignment = Element.TITLE;
+            dniParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.BOLD);
+
+            linea1Columna3.AddElement(dniParagraph);
+
+            Paragraph dniParagraphValor = new Paragraph(cliente.Dni);
+            dniParagraphValor.Alignment = Element.TITLE;
+            dniParagraphValor.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+            linea1Columna3.AddElement(dniParagraphValor);
+
+            tabFot.AddCell(linea1Columna3);
+            
+            
+
+            //Linea 2
+
+            PdfPCell linea2Columna1 = new PdfPCell();
+
+            Paragraph domicilioParagraph = new Paragraph("Domicilio");
+            domicilioParagraph.Alignment = Element.TITLE;
+            domicilioParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.BOLD);
+
+            linea2Columna1.AddElement(domicilioParagraph);
+
+            Paragraph domicilioParagraphValor = new Paragraph(cliente.Domicilio);
+            domicilioParagraphValor.Alignment = Element.TITLE;
+            domicilioParagraphValor.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+            linea2Columna1.AddElement(domicilioParagraphValor);
+
+            tabFot.AddCell(linea2Columna1);
+
+            PdfPCell linea2Columna2 = new PdfPCell();
+
+            Paragraph ciudadParagraph = new Paragraph("Ciudad");
+            ciudadParagraph.Alignment = Element.TITLE;
+            ciudadParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.BOLD);
+
+            linea2Columna2.AddElement(ciudadParagraph);
+
+            Paragraph ciudadParagraphValor = new Paragraph(cliente.Ciudad);
+            ciudadParagraphValor.Alignment = Element.TITLE;
+            ciudadParagraphValor.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+            linea2Columna2.AddElement(ciudadParagraphValor);
+
+            tabFot.AddCell(linea2Columna2);
+
+            PdfPCell linea2Columna3 = new PdfPCell();
+
+            Paragraph emailParagraph = new Paragraph("Email");
+            emailParagraph.Alignment = Element.TITLE;
+            emailParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.BOLD);
+
+            linea2Columna3.AddElement(emailParagraph);
+
+            Paragraph emailParagraphValor = new Paragraph(cliente.Email);
+            emailParagraphValor.Alignment = Element.TITLE;
+            emailParagraphValor.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+            linea2Columna3.AddElement(emailParagraphValor);
+
+            tabFot.AddCell(linea2Columna3);
+
+
+            //Linea 3
+
+            PdfPCell linea3Columna1 = new PdfPCell();
+
+            Paragraph telefonoParagraph = new Paragraph("Telefono");
+            telefonoParagraph.Alignment = Element.TITLE;
+            telefonoParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.BOLD);
+
+            linea3Columna1.AddElement(telefonoParagraph);
+
+            Paragraph telefonoParagraphValor = new Paragraph(cliente.Telefono);
+            telefonoParagraphValor.Alignment = Element.TITLE;
+            telefonoParagraphValor.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+            linea3Columna1.AddElement(telefonoParagraphValor);
+
+            tabFot.AddCell(linea3Columna1);
+
+            PdfPCell linea3Columna2 = new PdfPCell();
+
+            Paragraph celularParagraph = new Paragraph("Celular");
+            celularParagraph.Alignment = Element.TITLE;
+            celularParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.BOLD);
+
+            linea3Columna2.AddElement(celularParagraph);
+
+            Paragraph celularParagraphValor = new Paragraph(cliente.Celular);
+            celularParagraphValor.Alignment = Element.TITLE;
+            celularParagraphValor.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+            linea3Columna2.AddElement(celularParagraphValor);
+
+            tabFot.AddCell(linea3Columna2);
+
+            PdfPCell linea3Columna3 = new PdfPCell();
+
+            /*
+            Paragraph emailParagraph = new Paragraph("Email");
+            emailParagraph.Alignment = Element.TITLE;
+            emailParagraph.Font = FontFactory.GetFont("Verdana", 8F, Font.BOLD);
+
+            linea2Columna3.AddElement(emailParagraph);
+
+            Paragraph emailParagraphValor = new Paragraph(cliente.Email);
+            emailParagraphValor.Alignment = Element.TITLE;
+            emailParagraphValor.Font = FontFactory.GetFont("Verdana", 8F, Font.NORMAL);
+
+            linea2Columna3.AddElement(emailParagraphValor);
+            */
+            tabFot.AddCell(linea3Columna3);
+
+        }
+
+
+        private String agregarNumeroDePagina(String filePath, String filePathFinal)
         {
             byte[] bytes = File.ReadAllBytes(@filePath);
             Font blackFont = FontFactory.GetFont("Arial", 12, Font.NORMAL, BaseColor.BLACK);
@@ -98,7 +380,7 @@ namespace Utils
                 }
                 bytes = stream.ToArray();
             }
-            String filePathFinal = generarPDFVentasNombreDeArchivo();
+ 
             File.WriteAllBytes(@filePathFinal, bytes);
 
             return filePathFinal;
@@ -209,12 +491,17 @@ namespace Utils
             tabFot.AddCell(celdaDatosComplementarios);
         }
 
-        private string generarPDFVentasNombreDeArchivo()
+        private string generarNombreDeArchivoPDFVentas()
         {
             String fileName = "reporteDeVentas" + DateTime.Now.ToString("yyyyMMdd-HHmmss") +".pdf";
             return "C:\\Users\\Leonora\\Desktop\\" + fileName;
         }
 
+        private string generarNombreDeArchivoPDFInscripcion()
+        {
+            String fileName = "reporteInscreipcion" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".pdf";
+            return "C:\\Users\\Leonora\\Desktop\\" + fileName;
+        }
 
         private void generarDatosComplementariosVoucher(PdfPTable tabFot, Voucher voucher)
         {
@@ -311,6 +598,9 @@ namespace Utils
             PdfPCell celdaVoucherDatos = new PdfPCell();
 
             Paragraph textoDatosVaoucher = new Paragraph(detalle);
+            textoDatosVaoucher.Alignment = Element.ALIGN_BOTTOM;
+            //paragraph.Font.Size = 16F;
+            textoDatosVaoucher.Font = FontFactory.GetFont("Verdana",9F, Font.NORMAL);
 
             celdaVoucherDatos.AddElement(textoDatosVaoucher);
             
